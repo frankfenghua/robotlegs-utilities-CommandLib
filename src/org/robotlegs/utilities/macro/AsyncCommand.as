@@ -1,4 +1,17 @@
-package org.robotlegs.extentions.mvcs.macro
+/**
+ *  Macro commands in the Robot Legs Framework
+ * 
+ * Any portion of this may be reused for any purpose where not 
+ * licensed by another party restricting such use. 
+ * 
+ * Please leave the credits intact.
+ * 
+ * Chase Brammer
+ * http://chasebrammer.com
+ * cbrammer@gmail.com
+ */
+
+package org.robotlegs.utilities.macro
 {
 	import flash.utils.Dictionary;
 	
