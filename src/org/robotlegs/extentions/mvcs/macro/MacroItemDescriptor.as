@@ -3,8 +3,10 @@ package org.robotlegs.extentions.mvcs.macro
 	import flash.events.Event;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
+	
+	import org.robotlegs.mvcs.Command;
 
-	public class MacroCommandItemData
+	public class MacroItemDescriptor
 	{
 		/**
 		 * The class of the command that will be executed 
@@ -49,7 +51,7 @@ package org.robotlegs.extentions.mvcs.macro
 			return getDefinitionByName(getQualifiedClassName(payload)) as Class;
 		}
 		
-		public function MacroCommandItemData(command:Class, event:Object, named:String = ""):void
+		public function MacroItemDescriptor(command:Class, event:Object, named:String = ""):void
 		{
 			this.command = command;
 			this.payload = event;

@@ -1,6 +1,7 @@
 package org.robotlegs.extentions.mvcs.macro
 {
 	import flash.events.Event;
+	import flash.utils.Dictionary;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
@@ -10,7 +11,7 @@ package org.robotlegs.extentions.mvcs.macro
 	internal class MacroCommand extends AsyncCommand
 	{
 		/**
-		 * The array of commands that we will be executing 
+		 * The Dictionary of commands that we will be executing 
 		 */		
 		protected var commands:Array;
 		
@@ -24,20 +25,10 @@ package org.robotlegs.extentions.mvcs.macro
 		 */		
 		public var isAtomic:Boolean = true;
 		
-		public function MacroCommand(commands:Array = null)
+		public function MacroCommand()
 		{
+			commands = [];
 			super();
-			commands = []
-			
-			// go through add add each one via add command
-			// we are creating a new object here because if they pass in a command twice
-			// we want those to be serate commands with separate metadata
-			for each(var cmd:MacroCommandItemData in commands) {
-				addCommand(cmd.command, cmd.payload, cmd.named);
-			}
-			
-			initializeCommand();
-			
 		}
 		
 		/**
@@ -46,8 +37,6 @@ package org.robotlegs.extentions.mvcs.macro
 		override public function execute():void {
 			super.execute();
 		}
-		
-		protected function initializeCommand():void {}
 		
 		/**
 		 *  Creates a line item macro command object that will be added to the queue to be executed
@@ -58,20 +47,16 @@ package org.robotlegs.extentions.mvcs.macro
 		 * 
 		 * 
 		 */		
-		protected function addCommand(command:Class, payload:Object = null, named:String = ""): void {
-			
-			if(!commands)
-				commands = [];
-			
+		protected function addCommand(command:Class, payload:Object = null, named:String = ""):void {
 			// Wrap it all in an object so we can reference it easier through the code
-			commands.push(new MacroCommandItemData(command, payload, named));
+			commands.push(new MacroItemDescriptor(command, payload, named));
 		}	
 		
 		/**
 		 * Executes the subcommand that is passed in, only will execute classes that inherit from AsyncCommand 
 		 * @param cmd The object that contains the command information to execute
 		 */		
-		internal function executeSubcommand(cmd:MacroCommandItemData):void {
+		internal function executeSubcommand(cmd:MacroItemDescriptor):void {
 
 			// Alternative method could be this, but then we can get a reference back to the command to listen
 			// for a complete/incomplete callback or event
@@ -88,6 +73,9 @@ package org.robotlegs.extentions.mvcs.macro
 			if(cmd.payload)
 				injector.unmap(cmd.payloadClass);
 			
+			// mark this as executed before we execute it just in case it is extra fast
+			cmd.executed = true; 
+			
 			// If our command is an AsyncCommand
 			if (commandInstance is AsyncCommand) 
 			{
@@ -98,19 +86,12 @@ package org.robotlegs.extentions.mvcs.macro
 				
 				// Keep track of the containing object, because this is what keeps track of 
 				// where this command is along the execution path of not started, started, completed, and completion status 
-				asyncCommand.macroCommandItemData = cmd;
-				
-				// mark this as executed before we execute it just in case it is extra fast
-				cmd.executed = true; 
+				asyncCommand.macroItemDescriptor = cmd;
 				asyncCommand.execute();
 			} else {
 				// we got to a command instance, if it is a command execute it, mark it as a success
-				if(commandInstance is Command) {
-					var myCmd:Command = commandInstance as Command;
-					cmd.executed = true; 
-					myCmd.execute();
-					subcommandComplete(cmd);
-				} 
+				commandInstance.execute();
+				subcommandComplete(cmd);
 			}
 		}
 		
@@ -118,12 +99,12 @@ package org.robotlegs.extentions.mvcs.macro
 		 * Called whenever a subcommand completes successfully 
 		 * @param cmd the object containing the command that was executed
 		 */		
-		internal function subcommandComplete(cmd:MacroCommandItemData):void {}
+		internal function subcommandComplete(cmd:MacroItemDescriptor):void {}
 		
 		/**
 		 * Called whenever a subcommand completes unsuccessfully 
 		 * @param cmd the object containing the command that was executed
 		 */	
-		internal function subcommandIncomplete(cmd:MacroCommandItemData):void {} 
+		internal function subcommandIncomplete(cmd:MacroItemDescriptor):void {} 
 	}
 }

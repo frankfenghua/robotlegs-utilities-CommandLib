@@ -10,8 +10,8 @@ package org.robotlegs.extentions.mvcs.macro
 	public class ParallelCommand extends MacroCommand
 	{
 		
-		public function ParallelCommand(commands:Array = null) {
-			super(commands);
+		public function ParallelCommand() {
+			super();
 		}
 		
 		/**
@@ -27,7 +27,7 @@ package org.robotlegs.extentions.mvcs.macro
 		 * commands left to execute, exits the batch 
 		 */		
 		private function executeCommands():void {
-			for each(var cmd:MacroCommandItemData in commands) {
+			for each(var cmd:MacroItemDescriptor in commands) {
 				executeSubcommand(cmd);
 			}
 		}
@@ -36,7 +36,7 @@ package org.robotlegs.extentions.mvcs.macro
 		 * Called in a command fails 
 		 * @param cmd the holding object that contains the command that was called
 		 */		
-		override internal function subcommandComplete(cmd:MacroCommandItemData):void {
+		override internal function subcommandComplete(cmd:MacroItemDescriptor):void {
 			cmd.executedSuccessfully = true;
 			cmd.executionFinished = true;
 			checkComplete();
@@ -46,7 +46,7 @@ package org.robotlegs.extentions.mvcs.macro
 		 * Called in a command fails 
 		 * @param cmd the holding object that contains the command that was called
 		 */		
-		override internal function subcommandIncomplete(cmd:MacroCommandItemData):void {
+		override internal function subcommandIncomplete(cmd:MacroItemDescriptor):void {
 			cmd.executedSuccessfully = false;
 			cmd.executionFinished = true;
 			checkComplete();
@@ -61,7 +61,7 @@ package org.robotlegs.extentions.mvcs.macro
 			
 			// Loop through all of the running commands and check if they
 			// have been executed and if they failed or not
-			for each (var cmd:MacroCommandItemData in commands) {
+			for each (var cmd:MacroItemDescriptor in commands) {
 				
 				// exit this function if all commands have not yet been executed and completed
 				if(!cmd.executed || !cmd.executionFinished)

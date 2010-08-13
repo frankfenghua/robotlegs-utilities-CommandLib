@@ -9,8 +9,8 @@ package org.robotlegs.extentions.mvcs.macro
 
 	public class SequenceCommand extends MacroCommand
 	{
-		public function SequenceCommand(commands:Array = null) {
-			super(commands);
+		public function SequenceCommand() {
+			super();
 		}
 		
 		/**
@@ -31,7 +31,7 @@ package org.robotlegs.extentions.mvcs.macro
 			if(commands && commands.length > 0) {
 				
 				// The object holder for all of the info we need to execute each command
-				var cmd:MacroCommandItemData = commands.shift();
+				var cmd:MacroItemDescriptor = commands.shift();
 				
 				executeSubcommand(cmd); // Execute the subcommand
 				
@@ -45,7 +45,7 @@ package org.robotlegs.extentions.mvcs.macro
 		 * Whenever a subcommand completes, its will call this function 
 		 * @param cmd the MacroCommandItemData object that contained the command that was executed
 		 */		
-		override internal function subcommandComplete(cmd:MacroCommandItemData):void {
+		override internal function subcommandComplete(cmd:MacroItemDescriptor):void {
 			cmd.executedSuccessfully = true; // mark it as completed succesfully
 			executeNextCommand(); // run the next command
 		}
@@ -54,7 +54,7 @@ package org.robotlegs.extentions.mvcs.macro
 		 * Whenever a subcommand fails, its will call this function 
 		 * @param cmd the MacroCommandItemData object that contained the command that was executed
 		 */		
-		override internal function subcommandIncomplete(cmd:MacroCommandItemData):void {
+		override internal function subcommandIncomplete(cmd:MacroItemDescriptor):void {
 			cmd.executedSuccessfully = false; // mark it as completed succesfully
 			
 			// If we failed, and we are not atomic then we failed, dispatch a command incomplete

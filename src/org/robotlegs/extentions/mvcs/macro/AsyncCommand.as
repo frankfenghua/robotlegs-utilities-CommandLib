@@ -8,7 +8,7 @@ package org.robotlegs.extentions.mvcs.macro
 	
 	public class AsyncCommand extends Command
 	{
-		internal var macroCommandItemData:MacroCommandItemData;
+		internal var macroItemDescriptor:MacroItemDescriptor;
 		private var _onCommandComplete:Function;
 		private var _onCommandIncomplete:Function;
 		
@@ -53,7 +53,7 @@ package org.robotlegs.extentions.mvcs.macro
 			// If we aren't inside of a batch, don't even worry about calling 
 			// this function
 			if(_onCommandComplete != null) {
-				_onCommandComplete(macroCommandItemData);
+				_onCommandComplete(macroItemDescriptor);
 			}
 			cleanup();
 		}
@@ -66,7 +66,7 @@ package org.robotlegs.extentions.mvcs.macro
 			// If we aren't inside of a batch, don't even worry about calling 
 			// this function
 			if(_onCommandIncomplete != null) {
-				_onCommandIncomplete(macroCommandItemData);
+				_onCommandIncomplete(macroItemDescriptor);
 			}
 			cleanup();
 		}
