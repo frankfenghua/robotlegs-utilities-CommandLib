@@ -1,0 +1,5 @@
+To get the library running properly you must:
+
+Step 1: Get the project from git hub - http://github.com/cbrammer/robotlegs-utilities-CommandLib
+
+Step 2: In Flash Builder select File>Import Flex Project and select the CommandLib directory
