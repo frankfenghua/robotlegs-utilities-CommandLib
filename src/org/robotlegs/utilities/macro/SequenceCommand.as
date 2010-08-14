@@ -41,10 +41,10 @@ package org.robotlegs.utilities.macro
 		private function executeNextCommand():void
 		{
 			// Keep executing commands while we have commands in our array
-			if(commands && commands.length > 0) {
+			if(commandDescriptors && commandDescriptors.length > 0) {
 				
 				// The object holder for all of the info we need to execute each command
-				var cmd:SubcommandDescriptor = commands.shift();
+				var cmd:SubcommandDescriptor = commandDescriptors.shift();
 				
 				executeSubcommand(cmd); // Execute the subcommand
 				

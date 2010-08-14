@@ -26,12 +26,12 @@ package org.robotlegs.utilities.macro
 		/**
 		 * Keeps track each execution cycle if at least one command has failed
 		 */		
-		protected var hasAtLeastOneFailure:Boolean;
+		internal var hasAtLeastOneFailure:Boolean;
 		
 		/**
-		 * The Dictionary of commands that we will be executing 
+		 * The an array of command descriptors that contains what commands we will be executing
 		 */		
-		protected var commands:Array;
+		internal var commandDescriptors:Array;
 		
 		/**
 		 * Determines if the commands are interdependant.  For example: if one command in a sequence fails
@@ -46,7 +46,7 @@ package org.robotlegs.utilities.macro
 		public function MacroCommand()
 		{
 			hasAtLeastOneFailure = false;
-			commands = [];
+			commandDescriptors = [];
 			super();
 		}
 		
@@ -59,18 +59,38 @@ package org.robotlegs.utilities.macro
 		
 		
 		/**
-		 *  Creates a line item macro command object that will be added to the queue to be executed
-		 * This class is only to be called in the initializeCommand function.
+		 *  Creates a subcommand descriptor object that will be added to the queue to be executed
 		 * @param command The class of the command that needs executing
 		 * @param payload The payload (if any) that we want to pass to this command, usually an event
 		 * @param named The named payload if there is one
 		 * @return Returns a SubcommandDescriptor that can be used to listen to that status changes of each event
 		 */		
-		protected function addCommand(command:Class, payload:Object = null, named:String = ""):SubcommandDescriptor {
+		public function addCommand(command:Class, payload:Object = null, named:String = ""):SubcommandDescriptor {
 			// Wrap it all in an object so we can reference it easier through the code
 			var descriptor:SubcommandDescriptor = new SubcommandDescriptor(command, payload, named);
-			commands.push(descriptor);
+			commandDescriptors.push(descriptor);
 			descriptor.executionStatus_internal = SubcommandDescriptor.WAITING_TO_BE_EXECUTED;
+			return descriptor;
+		}	
+		
+		/**
+		 *  Creates a subcommand descriptor object that will be added to the queue to be executed,
+		 * but takes a command instance clas
+		 * @param commandInstance The instance of the class that needs some executing
+		 * @param payload The payload (if any) that we want to pass to this command, usually an event
+		 * @param named The named payload if there is one
+		 * @return Returns a SubcommandDescriptor that can be used to listen to that status changes of each event
+		 */		
+		public function addProgramaticCommand(commandInstance:Object, payload:Object = null, named:String = ""):SubcommandDescriptor {
+			// Get the type of class of the command instance that we passed in
+			var commandClass:Class = getDefinitionByName(getQualifiedClassName(commandInstance)) as Class;
+			
+			// Wrap it all in an object so we can reference it easier through the code
+			var descriptor:SubcommandDescriptor = new SubcommandDescriptor(commandClass, payload, named);
+			
+			descriptor.commandInstance_internal = commandInstance; // Add our instance to the descriptor
+			commandDescriptors.push(descriptor); // Push it to the commands to be executed
+			descriptor.executionStatus_internal = SubcommandDescriptor.WAITING_TO_BE_EXECUTED; // Set its status
 			return descriptor;
 		}	
 		
@@ -80,29 +100,33 @@ package org.robotlegs.utilities.macro
 		 */		
 		internal function executeSubcommand(cmd:SubcommandDescriptor):void {
 
-			// Alternative method could be this, but then we can get a reference back to the command to listen
-			// for a complete/incomplete callback or event
-			//commandMap.execute(mappedCommand.command, mappedCommand.event, mappedCommand.payloadClass, mappedCommand.named);
-			
-			// If we have a payload, inject it in so that it will get injeted into the new command
-			if(cmd.payload)
-				injector.mapValue(cmd.payloadClass, cmd.payload, cmd.named);
-			
-			// Create an instance of the command
-			var commandInstance:Object = injector.instantiate(cmd.command);
-			
-			// if we mapped a payload, unmap it
-			if(cmd.payload)
-				injector.unmap(cmd.payloadClass);
+			// Create an instance if we don't already have one
+			if(!cmd.commandInstance) {
+				
+				// Alternative method could be this, but then we can get a reference back to the command to listen
+				// for a complete/incomplete callback or event
+				//commandMap.execute(mappedCommand.command, mappedCommand.event, mappedCommand.payloadClass, mappedCommand.named);
+				
+				// If we have a payload, inject it in so that it will get injeted into the new command
+				if(cmd.payload)
+					injector.mapValue(cmd.payloadClass, cmd.payload, cmd.named);
+				
+				// Create an instance of the command
+				cmd.commandInstance_internal = injector.instantiate(cmd.commandClass);
+				
+				// if we mapped a payload, unmap it
+				if(cmd.payload)
+					injector.unmap(cmd.payloadClass);
+			}
 			
 			// mark this as executed before we execute it just in case it is extra fast
 			cmd.executionStatus_internal = SubcommandDescriptor.IS_EXECUTING; 
 			
 			// If our command is an AsyncCommand
-			if (commandInstance is AsyncCommand) 
+			if (cmd.commandInstance is AsyncCommand) 
 			{
 				// Cast it as an Async command, and add in our callback functions for complete/incomplete
-				var asyncCommand:AsyncCommand = commandInstance as AsyncCommand;
+				var asyncCommand:AsyncCommand = cmd.commandInstance as AsyncCommand;
 				asyncCommand.onCommandComplete = subcommandComplete;
 				asyncCommand.onCommandIncomplete = subcommandIncomplete;
 				
@@ -112,7 +136,7 @@ package org.robotlegs.utilities.macro
 				asyncCommand.execute();
 			} else {
 				// we got to a command instance, if it is a command execute it, mark it as a success
-				commandInstance.execute();
+				cmd.commandInstance.execute();
 				subcommandComplete(cmd);
 			}
 		}

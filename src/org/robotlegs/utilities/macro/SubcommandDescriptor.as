@@ -51,23 +51,62 @@ package org.robotlegs.utilities.macro
 		/**
 		 * The class of the command that will be executed 
 		 */		
-		public var command:Class;
+		private var _commandClass:Class;
+		
+		/**
+		 * Getter for the command class
+		 * @return The payload object
+		 */		
+		public function get commandClass():Class {
+			return _commandClass;
+		}
 		
 		/**
 		 * The class of the command that will be executed 
 		 */		
-		public var commandInstance:Object
+		private var _commandInstance:Object
+		
+		/**
+		 * Getter for the command instance
+		 * @return The command instance object
+		 */		
+		public function get commandInstance():Object {
+			return _commandInstance;
+		}
+		
+		/**
+		 * Setter for the command instance
+		 */		
+		internal function set commandInstance_internal(value:Object):void {
+			_commandInstance = value;
+		}
 		
 		/**
 		 * The payload object that will be injected into the command
 		 * This is usually going to be an event 
+		 */
+		private var _payload:Object;
+		
+		/**
+		 * Getter for the payload object 
+		 * @return The payload object
 		 */		
-		public var payload:Object;
+		public function get payload():Object {
+			return _payload;
+		}
 		
 		/**
 		 * The named value of the payload object, used in the RL framework
 		 */		
-		public var named:String;
+		private var _named:String;
+		
+		/**
+		 * Getter for the named property
+		 * @return The named value
+		 */		
+		public function get named():String {
+			return _named;
+		}
 		
 		/**
 		 * Keeps track of this descriptor's command's execution status
@@ -75,6 +114,8 @@ package org.robotlegs.utilities.macro
 		 */		
 		private var _executionStatus:String
 		
+		
+
 		/**
 		 * Getter for the execution status 
 		 * @return the execution status
@@ -132,11 +173,11 @@ package org.robotlegs.utilities.macro
 			return getDefinitionByName(getQualifiedClassName(payload)) as Class;
 		}
 		
-		public function SubcommandDescriptor(command:Class, payload:Object = null, named:String = ""):void
+		public function SubcommandDescriptor(commandClass:Class, payload:Object = null, named:String = ""):void
 		{
-			this.command = command;
-			this.payload = payload;
-			this.named = named;
+			_commandClass = commandClass;
+			_payload = payload;
+			_named = named;
 			executionStatus_internal = WAITING_TO_BE_EXECUTED;
 		}
 	}
