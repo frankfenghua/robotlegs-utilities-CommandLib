@@ -40,7 +40,7 @@ package org.robotlegs.utilities.macro
 		 * commands left to execute, exits the batch 
 		 */		
 		private function executeCommands():void {
-			for each(var cmd:MacroItemDescriptor in commands) {
+			for each(var cmd:SubcommandDescriptor in commands) {
 				executeSubcommand(cmd);
 			}
 		}
@@ -49,9 +49,8 @@ package org.robotlegs.utilities.macro
 		 * Called in a command fails 
 		 * @param cmd the holding object that contains the command that was called
 		 */		
-		override internal function subcommandComplete(cmd:MacroItemDescriptor):void {
-			cmd.executedSuccessfully = true;
-			cmd.executionFinished = true;
+		override protected function subcommandComplete(cmd:SubcommandDescriptor):void {
+			cmd.executionStatus_internal = SubcommandDescriptor.EXECUTED_SUCCUSSFULLY;
 			checkComplete();
 		}
 		
@@ -59,9 +58,13 @@ package org.robotlegs.utilities.macro
 		 * Called in a command fails 
 		 * @param cmd the holding object that contains the command that was called
 		 */		
-		override internal function subcommandIncomplete(cmd:MacroItemDescriptor):void {
-			cmd.executedSuccessfully = false;
-			cmd.executionFinished = true;
+		override protected function subcommandIncomplete(cmd:SubcommandDescriptor):void {
+			
+			// If there hasn't been a failer to trigger this flag yet, mark the flag
+			if(!hasAtLeastOneFailure)
+				hasAtLeastOneFailure = true;
+			
+			cmd.executionStatus_internal = SubcommandDescriptor.EXECUTED_UNSUCCESSFULLY;
 			checkComplete();
 		}
 		
@@ -70,19 +73,14 @@ package org.robotlegs.utilities.macro
 		 * and if they did so successfuly, if they all finished then we will finish this AsyncCommand. 
 		 */		
 		private function checkComplete():void {
-			var hasAtLeastOneFailure:Boolean;
-			
 			// Loop through all of the running commands and check if they
 			// have been executed and if they failed or not
-			for each (var cmd:MacroItemDescriptor in commands) {
+			for each (var cmd:SubcommandDescriptor in commands) {
 				
 				// exit this function if all commands have not yet been executed and completed
-				if(!cmd.executed || !cmd.executionFinished)
+				if(cmd.executionStatus != SubcommandDescriptor.EXECUTED_SUCCUSSFULLY 
+					|| cmd.executionStatus != SubcommandDescriptor.EXECUTED_UNSUCCESSFULLY )
 					return;
-				
-				// check to see if we have a failure in the batch
-				if(!hasAtLeastOneFailure && !cmd.executedSuccessfully)
-					hasAtLeastOneFailure = true;
 			}
 			
 			// No matter if we have a failure in the commands, since we started them all together, wait for 

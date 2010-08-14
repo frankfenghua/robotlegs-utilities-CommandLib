@@ -21,7 +21,7 @@ package org.robotlegs.utilities.macro
 	
 	public class AsyncCommand extends Command
 	{
-		internal var macroItemDescriptor:MacroItemDescriptor;
+		internal var macroItemDescriptor:SubcommandDescriptor;
 		private var _onCommandComplete:Function;
 		private var _onCommandIncomplete:Function;
 		

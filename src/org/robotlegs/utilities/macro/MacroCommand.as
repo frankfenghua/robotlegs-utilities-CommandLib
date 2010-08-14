@@ -24,6 +24,11 @@ package org.robotlegs.utilities.macro
 	internal class MacroCommand extends AsyncCommand
 	{
 		/**
+		 * Keeps track each execution cycle if at least one command has failed
+		 */		
+		protected var hasAtLeastOneFailure:Boolean;
+		
+		/**
 		 * The Dictionary of commands that we will be executing 
 		 */		
 		protected var commands:Array;
@@ -40,6 +45,7 @@ package org.robotlegs.utilities.macro
 		
 		public function MacroCommand()
 		{
+			hasAtLeastOneFailure = false;
 			commands = [];
 			super();
 		}
@@ -51,25 +57,28 @@ package org.robotlegs.utilities.macro
 			super.execute();
 		}
 		
+		
 		/**
 		 *  Creates a line item macro command object that will be added to the queue to be executed
 		 * This class is only to be called in the initializeCommand function.
 		 * @param command The class of the command that needs executing
 		 * @param payload The payload (if any) that we want to pass to this command, usually an event
 		 * @param named The named payload if there is one
-		 * 
-		 * 
+		 * @return Returns a SubcommandDescriptor that can be used to listen to that status changes of each event
 		 */		
-		protected function addCommand(command:Class, payload:Object = null, named:String = ""):void {
+		protected function addCommand(command:Class, payload:Object = null, named:String = ""):SubcommandDescriptor {
 			// Wrap it all in an object so we can reference it easier through the code
-			commands.push(new MacroItemDescriptor(command, payload, named));
+			var descriptor:SubcommandDescriptor = new SubcommandDescriptor(command, payload, named);
+			commands.push(descriptor);
+			descriptor.executionStatus_internal = SubcommandDescriptor.WAITING_TO_BE_EXECUTED;
+			return descriptor;
 		}	
 		
 		/**
 		 * Executes the subcommand that is passed in, only will execute classes that inherit from AsyncCommand 
 		 * @param cmd The object that contains the command information to execute
 		 */		
-		internal function executeSubcommand(cmd:MacroItemDescriptor):void {
+		internal function executeSubcommand(cmd:SubcommandDescriptor):void {
 
 			// Alternative method could be this, but then we can get a reference back to the command to listen
 			// for a complete/incomplete callback or event
@@ -87,7 +96,7 @@ package org.robotlegs.utilities.macro
 				injector.unmap(cmd.payloadClass);
 			
 			// mark this as executed before we execute it just in case it is extra fast
-			cmd.executed = true; 
+			cmd.executionStatus_internal = SubcommandDescriptor.IS_EXECUTING; 
 			
 			// If our command is an AsyncCommand
 			if (commandInstance is AsyncCommand) 
@@ -110,14 +119,18 @@ package org.robotlegs.utilities.macro
 		
 		/**
 		 * Called whenever a subcommand completes successfully 
+		 * Can be overridden by any class implemented MacroCommand to listen
+		 * for when each subcommand is finished
 		 * @param cmd the object containing the command that was executed
 		 */		
-		internal function subcommandComplete(cmd:MacroItemDescriptor):void {}
+		protected function subcommandComplete(cmd:SubcommandDescriptor):void {}
 		
 		/**
 		 * Called whenever a subcommand completes unsuccessfully 
+		 * Can be overridden by any class implemented MacroCommand to listen
+		 * for when each subcommand is finished
 		 * @param cmd the object containing the command that was executed
 		 */	
-		internal function subcommandIncomplete(cmd:MacroItemDescriptor):void {} 
+		protected function subcommandIncomplete(cmd:SubcommandDescriptor):void {} 
 	}
 }
