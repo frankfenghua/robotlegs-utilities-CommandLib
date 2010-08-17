@@ -29,9 +29,24 @@ package org.robotlegs.utilities.macro
 		internal var hasAtLeastOneFailure:Boolean;
 		
 		/**
-		 * The an array of command descriptors that contains what commands we will be executing
+		 * This is a copy of subcommandDescriptors_internal but one that we can edit and remove
+		 * finished items from
 		 */		
-		internal var commandDescriptors:Array;
+		internal var workingSubcommandDescriptors:Array;
+		
+		/**
+		 * The an array of command descriptors that contains what commands we will be executing
+		 * But this will only ever be added too, and will not be removed from
+		 */		
+		private var _subcommandDescriptors:Array;
+		
+		/**
+		 * Don't ever allow the user to get a hold of the original subcommand array to edit it in anyway
+		 * @return A new array of subcommand descriptors
+		 */		
+		public function get subcommandDescriptors():Array {
+			return _subcommandDescriptors.concat();
+		}
 		
 		/**
 		 * Determines if the commands are interdependant.  For example: if one command in a sequence fails
@@ -46,7 +61,7 @@ package org.robotlegs.utilities.macro
 		public function MacroCommand()
 		{
 			hasAtLeastOneFailure = false;
-			commandDescriptors = [];
+			_subcommandDescriptors = [];
 			super();
 		}
 		
@@ -55,6 +70,7 @@ package org.robotlegs.utilities.macro
 		 */		
 		override public function execute():void {
 			super.execute();
+			workingSubcommandDescriptors = _subcommandDescriptors.concat();
 		}
 		
 		
@@ -68,7 +84,7 @@ package org.robotlegs.utilities.macro
 		public function addCommand(command:Class, payload:Object = null, named:String = ""):SubcommandDescriptor {
 			// Wrap it all in an object so we can reference it easier through the code
 			var descriptor:SubcommandDescriptor = new SubcommandDescriptor(command, payload, named);
-			commandDescriptors.push(descriptor);
+			_subcommandDescriptors.push(descriptor);
 			descriptor.executionStatus_internal = SubcommandDescriptor.WAITING_TO_BE_EXECUTED;
 			return descriptor;
 		}	
@@ -89,7 +105,7 @@ package org.robotlegs.utilities.macro
 			var descriptor:SubcommandDescriptor = new SubcommandDescriptor(commandClass, payload, named);
 			
 			descriptor.commandInstance_internal = commandInstance; // Add our instance to the descriptor
-			commandDescriptors.push(descriptor); // Push it to the commands to be executed
+			_subcommandDescriptors.push(descriptor); // Push it to the commands to be executed
 			descriptor.executionStatus_internal = SubcommandDescriptor.WAITING_TO_BE_EXECUTED; // Set its status
 			return descriptor;
 		}	
@@ -132,7 +148,7 @@ package org.robotlegs.utilities.macro
 				
 				// Keep track of the containing object, because this is what keeps track of 
 				// where this command is along the execution path of not started, started, completed, and completion status 
-				asyncCommand.macroItemDescriptor = cmd;
+				asyncCommand.subcommandDescriptor_internal = cmd;
 				asyncCommand.execute();
 			} else {
 				// we got to a command instance, if it is a command execute it, mark it as a success

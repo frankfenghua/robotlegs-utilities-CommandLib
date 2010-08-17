@@ -40,7 +40,7 @@ package org.robotlegs.utilities.macro
 		 * commands left to execute, exits the batch 
 		 */		
 		private function executeCommands():void {
-			for each(var cmd:SubcommandDescriptor in commandDescriptors) {
+			for each(var cmd:SubcommandDescriptor in workingSubcommandDescriptors) {
 				executeSubcommand(cmd);
 			}
 		}
@@ -75,7 +75,7 @@ package org.robotlegs.utilities.macro
 		private function checkComplete():void {
 			// Loop through all of the running commands and check if they
 			// have been executed and if they failed or not
-			for each (var cmd:SubcommandDescriptor in commandDescriptors) {
+			for each (var cmd:SubcommandDescriptor in workingSubcommandDescriptors) {
 				
 				// exit this function if all commands have not yet been executed and completed
 				if(cmd.executionStatus != SubcommandDescriptor.EXECUTED_SUCCUSSFULLY 

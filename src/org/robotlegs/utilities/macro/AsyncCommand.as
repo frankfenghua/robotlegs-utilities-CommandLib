@@ -21,10 +21,25 @@ package org.robotlegs.utilities.macro
 	
 	public class AsyncCommand extends Command
 	{
-		internal var macroItemDescriptor:SubcommandDescriptor;
 		private var _onCommandComplete:Function;
 		private var _onCommandIncomplete:Function;
 		
+		/**
+		 * A variable that keeps lets the executing Async command know about
+		 * the descriptor object that it belongs too 
+		 */		
+		internal var subcommandDescriptor_internal:SubcommandDescriptor;
+		
+		/**
+		 * Allow the executing class to see this if they need it for any reason
+		 * but do not allow them to copy it 
+		 * @return the subcommand descriptor
+		 * 
+		 */		
+		public function get subcommandDescriptor():SubcommandDescriptor {
+			return subcommandDescriptor_internal;
+		}
+			
 		
 		/**
 		 * A callback function that is set by a macro command for when
@@ -66,7 +81,7 @@ package org.robotlegs.utilities.macro
 			// If we aren't inside of a batch, don't even worry about calling 
 			// this function
 			if(_onCommandComplete != null) {
-				_onCommandComplete(macroItemDescriptor);
+				_onCommandComplete(subcommandDescriptor_internal);
 			}
 			cleanup();
 		}
@@ -79,7 +94,7 @@ package org.robotlegs.utilities.macro
 			// If we aren't inside of a batch, don't even worry about calling 
 			// this function
 			if(_onCommandIncomplete != null) {
-				_onCommandIncomplete(macroItemDescriptor);
+				_onCommandIncomplete(subcommandDescriptor_internal);
 			}
 			cleanup();
 		}

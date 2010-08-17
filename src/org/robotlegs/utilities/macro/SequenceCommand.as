@@ -41,10 +41,10 @@ package org.robotlegs.utilities.macro
 		private function executeNextCommand():void
 		{
 			// Keep executing commands while we have commands in our array
-			if(commandDescriptors && commandDescriptors.length > 0) {
+			if(workingSubcommandDescriptors && workingSubcommandDescriptors.length > 0) {
 				
 				// The object holder for all of the info we need to execute each command
-				var cmd:SubcommandDescriptor = commandDescriptors.shift();
+				var cmd:SubcommandDescriptor = workingSubcommandDescriptors.shift();
 				
 				executeSubcommand(cmd); // Execute the subcommand
 				
@@ -68,7 +68,7 @@ package org.robotlegs.utilities.macro
 		 * @param cmd the MacroCommandItemData object that contained the command that was executed
 		 */		
 		override protected function subcommandIncomplete(cmd:SubcommandDescriptor):void {
-			cmd.executionStatus_internal = SubcommandDescriptor.EXECUTED_UNSUCCESSFULLY; // mark it as completed succesfully
+			cmd.executionStatus_internal = SubcommandDescriptor.EXECUTED_UNSUCCESSFULLY; // mark it as completed unsuccesfully
 			
 			// If we failed, and we are not atomic then we failed, dispatch a command incomplete
 			// but if we are atomic then who cares, go to the next command
